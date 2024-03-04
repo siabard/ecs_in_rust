@@ -37,6 +37,11 @@ impl World {
     pub fn get_resource_mut<T: Any>(&mut self) -> Option<&mut T> {
         self.resources.get_mut::<T>()
     }
+
+    /// This will remove the resource from the world, and it doesn't care if the resource exists of this point in time.
+    pub fn delete_resource<T: Any>(&mut self) {
+        self.resources.remove::<T>();
+    }
 }
 
 #[cfg(test)]

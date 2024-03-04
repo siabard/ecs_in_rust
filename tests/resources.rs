@@ -25,6 +25,14 @@ fn initialize_world() -> World {
     world
 }
 
+#[test]
+fn delete_resource() {
+    let mut world = initialize_world();
+    world.delete_resource::<FpsResource>();
+    let deleted_resource = world.get_resource::<FpsResource>();
+    assert!(deleted_resource.is_none());
+}
+
 #[derive(Debug, Eq, PartialEq)]
 struct FpsResource(pub u32);
 
