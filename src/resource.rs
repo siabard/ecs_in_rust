@@ -86,7 +86,6 @@ mod tests {
         resources.remove::<WorldWidth>();
         let world_width_type_id = TypeId::of::<WorldWidth>();
         assert!(!resources.data.contains_key(&world_width_type_id));
-
     }
     struct WorldWidth(pub f32);
 }

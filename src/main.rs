@@ -42,5 +42,4 @@ fn main() {
             println!("{} is still healthy", name.0);
         }
     }
-    
 }
