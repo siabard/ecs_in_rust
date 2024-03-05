@@ -1,7 +1,8 @@
 use ecs_in_rust::*;
+use eyre::Result;
 
 #[test]
-fn create_entity() {
+fn create_entity() -> Result<()>{
     // register component to register
     let location = Location(42.0, 24.0);
 
@@ -11,8 +12,10 @@ fn create_entity() {
 
     world
         .create_entity()
-        .with_component(Location(42.0, 24.0))
-        .with_component(Size(10.0));
+        .with_component(Location(42.0, 24.0))?
+        .with_component(Size(10.0))?;
+
+    Ok(())
 }
 
 struct Location(pub f32, pub f32);
