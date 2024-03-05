@@ -1,3 +1,5 @@
+pub mod query;
+
 use std::{
     any::{Any, TypeId},
     cell::RefCell,
@@ -5,19 +7,22 @@ use std::{
     rc::Rc,
 };
 
-use eyre::{Result};
+use eyre::Result;
 
 use crate::custom_errors::CustomErrors;
 
 #[derive(Debug, Default)]
 pub struct Entities {
     components: HashMap<TypeId, Vec<Option<Rc<RefCell<dyn Any>>>>>,
+    bit_masks: HashMap<TypeId, u32>,
 }
 
 impl Entities {
     pub fn register_component<T: Any>(&mut self) {
         let type_id = TypeId::of::<T>();
+        let bit_mask = 2u32.pow(self.bit_masks.len() as u32);
         self.components.insert(type_id, vec![]);
+        self.bit_masks.insert(type_id, bit_mask);
     }
 
     pub fn create_entity(&mut self) -> &mut Self {
@@ -57,6 +62,20 @@ mod test {
     }
 
     #[test]
+    fn bitmask_updated_when_registering_entity() {
+        let mut entities = Entities::default();
+        entities.register_component::<Health>();
+        let type_id = TypeId::of::<Health>();
+        let health_mask = entities.bit_masks.get(&type_id).unwrap();
+        assert_eq!(*health_mask, 1);
+
+        entities.register_component::<Speed>();
+        let type_id = TypeId::of::<Speed>();
+        let speed_mask = entities.bit_masks.get(&type_id).unwrap();
+        assert_eq!(*speed_mask, 2);
+    }
+
+    #[test]
     fn create_entity() {
         let mut entities = Entities::default();
         entities.register_component::<Health>();
@@ -78,8 +97,10 @@ mod test {
 
         entities
             .create_entity()
-            .with_component(Health(100)).unwrap()
-            .with_component(Speed(15)).unwrap();
+            .with_component(Health(100))
+            .unwrap()
+            .with_component(Speed(15))
+            .unwrap();
 
         let first_health = &entities.components.get(&TypeId::of::<Health>()).unwrap()[0];
         let wrapped_health = first_health.as_ref().unwrap();
