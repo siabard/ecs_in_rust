@@ -5,6 +5,7 @@ use resource::Resource;
 
 mod entities;
 mod resource;
+pub mod custom_errors;
 
 #[derive(Default)]
 pub struct World {

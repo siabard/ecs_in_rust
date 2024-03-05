@@ -5,7 +5,9 @@ use std::{
     rc::Rc,
 };
 
-use eyre::{bail, Result};
+use eyre::{Result};
+
+use crate::custom_errors::CustomErrors;
 
 #[derive(Debug, Default)]
 pub struct Entities {
@@ -30,11 +32,10 @@ impl Entities {
         if let Some(components) = self.components.get_mut(&type_id) {
             let last_component = components
                 .last_mut()
-                .ok_or_else(|| "Could not find last component")
-                .unwrap();
+                .ok_or(CustomErrors::CreatComponentNeverCalled)?;
             *last_component = Some(Rc::new(RefCell::new(data)));
         } else {
-            bail!("attempted to insert data for component that wasn't registered")
+            return Err(CustomErrors::ComponentNotRegistered.into());
         }
         Ok(self)
     }
