@@ -19,7 +19,7 @@ pub struct Entities {
 }
 
 impl Entities {
-    pub fn register_component<T: Any>(&mut self) {
+    pub fn register_component<T: Any + 'static>(&mut self) {
         let type_id = TypeId::of::<T>();
         let bit_mask = 2u32.pow(self.bit_masks.len() as u32);
         self.components.insert(type_id, vec![]);
@@ -44,7 +44,7 @@ impl Entities {
             let last_component = components
                 .last_mut()
                 .ok_or(CustomErrors::CreatComponentNeverCalled)?;
-            *last_component = Some(Rc::new(RefCell::new(data)));
+            *last_component = Some(Rc::new(RefCell::new(data)) as Rc<RefCell<dyn Any>>);
 
             let bitmask = self.bit_masks.get(&type_id).unwrap();
             self.map[map_index] |= *bitmask;
@@ -52,6 +52,14 @@ impl Entities {
             return Err(CustomErrors::ComponentNotRegistered.into());
         }
         Ok(self)
+    }
+
+    pub fn get_bitmask(&self, type_id: &TypeId) -> Option<u32> {
+        if let Some(bit_mask) = self.bit_masks.get(type_id) {
+            Some(*bit_mask)
+        } else {
+            None
+        }
     }
 }
 
@@ -134,9 +142,7 @@ mod test {
         let entity_map = entities.map[0];
         assert_eq!(entity_map, 3);
 
-        entities
-        .create_entity()
-        .with_component(Speed(15))?;
+        entities.create_entity().with_component(Speed(15))?;
 
         let entity_map = entities.map[1];
         assert_eq!(entity_map, 2);

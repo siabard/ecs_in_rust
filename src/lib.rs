@@ -3,9 +3,9 @@ use std::any::Any;
 use entities::{query::Query, Entities};
 use resource::Resource;
 
+pub mod custom_errors;
 mod entities;
 mod resource;
-pub mod custom_errors;
 
 #[derive(Default)]
 pub struct World {
@@ -47,18 +47,17 @@ impl World {
         self.resources.remove::<T>();
     }
 
-    pub fn register_component<T: Any>(& mut self) {
+    pub fn register_component<T: Any>(&mut self) {
         self.entities.register_component::<T>();
     }
 
-    pub fn create_entity(&mut self) -> &mut Entities{
+    pub fn create_entity(&mut self) -> &mut Entities {
         self.entities.create_entity()
     }
 
     pub fn query(&self) -> Query {
-        Query::new()
+        Query::new(&self.entities)
     }
-
 }
 
 #[cfg(test)]

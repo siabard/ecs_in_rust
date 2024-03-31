@@ -40,8 +40,8 @@ fn query_for_entities() -> Result<()> {
 
     let query = world
         .query()
-        .with_component::<Location>()
-        .with_component::<Size>()
+        .with_component::<Location>()?
+        .with_component::<Size>()?
         .run();
 
     let locations: &Vec<Rc<RefCell<dyn Any>>> = &query[0];
@@ -55,16 +55,17 @@ fn query_for_entities() -> Result<()> {
     assert_eq!(first_location.0, 42.0);
 
     let borrowed_first_size = sizes[0].borrow();
-    let first_size = borrowed_first_size.downcast_ref::<Location>().unwrap();
+    let first_size = borrowed_first_size.downcast_ref::<Size>().unwrap();
     assert_eq!(first_size.0, 10.0);
 
     let borrowed_second = locations[1].borrow();
     let second_location = borrowed_second.downcast_ref::<Location>().unwrap();
     assert_eq!(second_location.0, 44.0);
 
-    let borrowed_second_size = sizes[1].borrow();
-    let second_size = borrowed_second_size.downcast_ref::<Location>().unwrap();
-    assert_eq!(second_size.0, 12.0);
+    let mut borrowed_second_size = sizes[1].borrow_mut();
+    let second_size = borrowed_second_size.downcast_mut::<Size>().unwrap();
+    second_size.0 += 1.0;
+    assert_eq!(second_size.0, 13.0);
 
     Ok(())
 }
