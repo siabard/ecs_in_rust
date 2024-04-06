@@ -6,4 +6,6 @@ pub enum CustomErrors {
     CreatComponentNeverCalled,
     #[error("attempting to reference a component that wasn't registered")]
     ComponentNotRegistered,
+    #[error("attempting to reference a entity that doesn't exist")]
+    EntityDoesNotExits,
 }

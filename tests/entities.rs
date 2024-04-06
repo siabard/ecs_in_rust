@@ -100,5 +100,66 @@ fn delete_component_to_entity() -> Result<()> {
     Ok(())
 }
 
+#[test]
+fn add_component_to_entity() -> Result<()> {
+    let mut world = World::new();
+
+    world.register_component::<Location>();
+    world.register_component::<Size>();
+
+    world.create_entity().with_component(Location(0.0, 0.0))?;
+
+    world.add_component_to_entity_by_id(Size(20.0), 0)?;
+
+    let query = world
+        .query()
+        .with_component::<Location>()?
+        .with_component::<Size>()?
+        .run();
+
+    assert_eq!(query.0.len(), 1);
+
+    Ok(())
+}
+
+#[test]
+fn deleting_on_entity() -> Result<()> {
+    let mut world = World::new();
+    world.register_component::<Location>();
+    world.register_component::<Size>();
+
+    world
+        .create_entity()
+        .with_component(Location(0.0, 0.0))?
+        .with_component(Size(10.0))?;
+
+    world
+        .create_entity()
+        .with_component(Location(29.0, 0.0))?
+        .with_component(Size(15.0))?;
+
+    world.delete_entity_by_id(0)?;
+
+    let query = world.query().with_component::<Location>()?.run();
+
+    assert_eq!(query.0.len(), 1);
+
+    let borrowed_location = query.1[0][0].borrow();
+    let location = borrowed_location.downcast_ref::<Location>().unwrap();
+
+    assert_eq!(location.0, 29.0);
+
+    world.create_entity().with_component(Location(30.0, 50.0))?;
+
+    let query = world.query().with_component::<Location>()?.run();
+
+    let borrowed_location = query.1[0][0].borrow();
+    let location = borrowed_location.downcast_ref::<Location>().unwrap();
+
+    assert_eq!(location.0, 30.0);
+
+    Ok(())
+}
+
 struct Location(pub f32, pub f32);
 struct Size(pub f32);
