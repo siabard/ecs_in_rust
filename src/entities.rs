@@ -1,4 +1,5 @@
 pub mod query;
+pub mod query_entity;
 
 use std::{
     any::{Any, TypeId},
@@ -25,9 +26,8 @@ pub struct Entities {
 impl Entities {
     pub fn register_component<T: Any>(&mut self) {
         let type_id = TypeId::of::<T>();
-        let bit_mask = 2u32.pow(self.bit_masks.len() as u32);
         self.components.insert(type_id, vec![]);
-        self.bit_masks.insert(type_id, bit_mask);
+        self.bit_masks.insert(type_id, 1 << self.bit_masks.len());
     }
 
     pub fn create_entity(&mut self) -> &mut Self {
@@ -84,7 +84,10 @@ impl Entities {
             return Err(CustomErrors::ComponentNotRegistered.into());
         };
 
-        self.map[index] ^= *mask;
+        if self.has_component(index, *mask) {
+            self.map[index] ^= *mask;
+        }
+
         Ok(())
     }
 
@@ -109,6 +112,10 @@ impl Entities {
             return Err(CustomErrors::EntityDoesNotExits.into());
         }
         Ok(())
+    }
+
+    fn has_component(&self, index: usize, mask: u32) -> bool {
+        self.map[index] & mask == mask
     }
 }
 
@@ -283,6 +290,25 @@ mod test {
         let health = borrowed_health.downcast_ref::<Health>().unwrap();
 
         assert_eq!(health.0, 25);
+        Ok(())
+    }
+
+    #[test]
+    fn should_not_add_component_back_after_deleting_twice() -> Result<()> {
+        let mut entities = Entities::default();
+
+        entities.register_component::<u32>();
+        entities.register_component::<f32>();
+
+        entities
+            .create_entity()
+            .with_component(100_u32)?
+            .with_component(50.0_f32)?;
+
+        entities.delete_component_by_entity_id::<u32>(0)?;
+        entities.delete_component_by_entity_id::<u32>(0)?;
+        assert_eq!(entities.map[0], 2);
+
         Ok(())
     }
 

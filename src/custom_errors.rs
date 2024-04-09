@@ -8,4 +8,8 @@ pub enum CustomErrors {
     ComponentNotRegistered,
     #[error("attempting to reference a entity that doesn't exist")]
     EntityDoesNotExits,
+    #[error("attempting to reference a component that doesn't exist")]
+    ComponentDoesNotExists,
+    #[error("attempting to downcast to a wrong type")]
+    DowncastsToWrongType,
 }

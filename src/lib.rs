@@ -69,7 +69,7 @@ impl World {
     }
 
     pub fn delete_entity_by_id(&mut self, index: usize) -> Result<()> {
-        self.entities.delete_entity_by_id(index);
+        self.entities.delete_entity_by_id(index)?;
         Ok(())
     }
 }
